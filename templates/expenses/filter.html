@@ -1,0 +1,311 @@
+{% extends 'base.html' %}
+
+{% block title %}Filter Expenses{% endblock %}
+
+{% block extra_css %}
+<style>
+  .filter-page {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  .filter-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+    border: 1px solid #eef0f3;
+    padding: 2rem;
+    margin-bottom: 1.5rem;
+  }
+  .filter-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    align-items: flex-end;
+  }
+  .filter-field {
+    flex: 1;
+    min-width: 180px;
+  }
+  .filter-field label {
+    display: block;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: #475569;
+    margin-bottom: 0.5rem;
+  }
+  .filter-field input[type="date"] {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    font-size: 1rem;
+    background: #fafafa;
+    transition: all 0.2s;
+  }
+  .filter-field input[type="date"]:focus {
+    outline: none;
+    border-color: #059669;
+    box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.1);
+    background: white;
+  }
+  .btn-filter {
+    padding: 0.75rem 1.5rem;
+    background: #059669;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 0.9375rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-filter:hover {
+    background: #047857;
+    transform: translateY(-1px);
+  }
+  .btn-reset {
+    padding: 0.75rem 1.5rem;
+    background: white;
+    color: #64748b;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 0.9375rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+  }
+  .btn-reset:hover {
+    background: #f8fafc;
+    color: #334155;
+    border-color: #cbd5e1;
+  }
+  .results-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+    border: 1px solid #eef0f3;
+    overflow: hidden;
+  }
+  .results-header {
+    padding: 1.5rem 2rem;
+    border-bottom: 1px solid #eef0f3;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .results-header h3 {
+    margin: 0;
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: #1e293b;
+  }
+  .results-total {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #ef4444;
+  }
+  .results-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .results-table th {
+    padding: 1rem 1.5rem;
+    text-align: left;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #64748b;
+    background: #fafafa;
+    border-bottom: 1px solid #eef0f3;
+  }
+  .results-table td {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid #f1f5f9;
+    font-size: 0.9375rem;
+    color: #334155;
+  }
+  .results-table tr:last-child td {
+    border-bottom: none;
+  }
+  .results-table tr:hover td {
+    background: #fafafa;
+  }
+  .category-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border-radius: 9999px;
+  }
+  .category-Food { background: #fef2f2; color: #dc2626; }
+  .category-Transport { background: #eff6ff; color: #2563eb; }
+  .category-Shopping { background: #f5f3ff; color: #7c3aed; }
+  .category-Bills { background: #fffbeb; color: #d97706; }
+  .category-Entertainment { background: #faf5ff; color: #a855f7; }
+  .category-Health { background: #f0fdf4; color: #16a34a; }
+  .category-Education { background: #eff6ff; color: #2563eb; }
+  .category-Other { background: #f1f5f9; color: #475569; }
+  .amount-cell {
+    font-weight: 600;
+    color: #ef4444;
+  }
+  .empty-state {
+    padding: 4rem 2rem;
+    text-align: center;
+    color: #94a3b8;
+  }
+  .empty-state i {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+  }
+  .empty-state h4 {
+    color: #64748b;
+    margin-bottom: 0.5rem;
+  }
+  .quick-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+  }
+  .quick-filter {
+    padding: 0.5rem 1rem;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 9999px;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: #475569;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .quick-filter:hover {
+    background: #059669;
+    border-color: #059669;
+    color: white;
+  }
+  .quick-filter.active {
+    background: #059669;
+    border-color: #059669;
+    color: white;
+  }
+  @media (max-width: 640px) {
+    .filter-form {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    .filter-field {
+      width: 100%;
+    }
+    .btn-filter, .btn-reset {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="filter-page">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <div>
+        <h1 class="h3 mb-1 fw-bold"><i class="bi bi-funnel me-2"></i>Filter Expenses</h1>
+        <p class="text-muted mb-0">Find expenses by date range</p>
+      </div>
+      <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i>Back to Dashboard
+      </a>
+    </div>
+
+    <!-- Quick Filters -->
+    <div class="quick-filters">
+      <a href="?" class="quick-filter {% if not request.GET.start_date and not request.GET.end_date %}active{% endif %}">This Month</a>
+      <a href="?start_date={{ today|date:'Y-m-01' }}&end_date={{ today|date:'Y-m-d' }}" class="quick-filter {% if request.GET.start_date == today|date:'Y-m-01' and request.GET.end_date == today|date:'Y-m-d' %}active{% endif %}">Last 30 Days</a>
+      <a href="?start_date={{ today|date:'Y-01-01' }}&end_date={{ today|date:'Y-m-d' }}" class="quick-filter {% if request.GET.start_date == today|date:'Y-01-01' and request.GET.end_date == today|date:'Y-m-d' %}active{% endif %}">This Year</a>
+      <a href="?start_date={{ last_month_start }}&end_date={{ last_month_end }}" class="quick-filter">Last Month</a>
+    </div>
+
+    <!-- Filter Form -->
+    <div class="filter-card">
+      <form method="GET" class="filter-form">
+        <div class="filter-field">
+          <label for="start_date">Start Date</label>
+          <input type="date" id="start_date" name="start_date" value="{{ start_date }}">
+        </div>
+        <div class="filter-field">
+          <label for="end_date">End Date</label>
+          <input type="date" id="end_date" name="end_date" value="{{ end_date }}" max="{{ today|date:'Y-m-d' }}">
+        </div>
+        <button type="submit" class="btn-filter">
+          <i class="bi bi-funnel me-1"></i>Filter
+        </button>
+        <a href="?" class="btn-reset">
+          <i class="bi bi-arrow-clockwise me-1"></i>Reset
+        </a>
+      </form>
+    </div>
+
+    <!-- Results -->
+    <div class="results-card">
+      <div class="results-header">
+        <h3>Results ({{ expenses.count }} expense{{ expenses.count|pluralize }})</h3>
+        <span class="results-total">₹{{ total|floatformat:2 }}</span>
+      </div>
+
+      {% if expenses %}
+      <div class="table-responsive">
+        <table class="results-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Title</th>
+              <th>Category</th>
+              <th>Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for expense in expenses %}
+            <tr>
+              <td>{{ expense.date|date:"M d, Y" }}</td>
+              <td>{{ expense.title }}</td>
+              <td><span class="category-badge category-{{ expense.category }}">{{ expense.category }}</span></td>
+              <td class="amount-cell">₹{{ expense.amount|floatformat:2 }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="empty-state">
+        <i class="bi bi-search"></i>
+        <h4>No expenses found</h4>
+        <p>Try adjusting your date range or <a href="{% url 'dashboard' %}">add a new expense</a>.</p>
+      </div>
+      {% endif %}
+    </div>
+
+    <div class="text-center mt-4">
+      <a href="{% url 'dashboard' %}" class="btn btn-outline-primary">
+        <i class="bi bi-house me-1"></i>Back to Dashboard
+      </a>
+      <a href="{% url 'reports' %}?start_date={{ start_date }}&end_date={{ end_date }}" class="btn btn-primary ms-2">
+        <i class="bi bi-bar-chart me-1"></i>View Reports
+      </a>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Set max date to today
+  document.getElementById('end_date').max = new Date().toISOString().split('T')[0];
+</script>
+{% endblock %}

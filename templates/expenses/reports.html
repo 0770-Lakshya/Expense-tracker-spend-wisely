@@ -1,0 +1,342 @@
+{% extends 'base.html' %}
+
+{% block title %}Reports - Expense Tracker{% endblock %}
+
+{% block extra_css %}
+<style>
+  .reports-page {
+    max-width: 1000px;
+    margin: 0 auto;
+  }
+  .stat-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+    border: 1px solid #eef0f3;
+    padding: 1.5rem;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+  }
+  .stat-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    margin-bottom: 1rem;
+  }
+  .stat-icon-primary { background: #ecfdf5; color: #059669; }
+  .stat-icon-danger { background: #fef2f2; color: #ef4444; }
+  .stat-icon-success { background: #f0fdf4; color: #22c55e; }
+  .stat-icon-warning { background: #fffbeb; color: #f59e0b; }
+  .stat-value {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0;
+  }
+  .stat-label {
+    font-size: 0.8125rem;
+    color: #64748b;
+    font-weight: 500;
+    margin: 0;
+  }
+  .chart-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+    border: 1px solid #eef0f3;
+    padding: 2rem;
+    margin-bottom: 1.5rem;
+  }
+  .chart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+  }
+  .chart-header h3 {
+    margin: 0;
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: #1e293b;
+  }
+  .chart-container {
+    position: relative;
+    height: 300px;
+    width: 100%;
+    max-width: 400px;
+    margin: 0 auto;
+  }
+  .category-breakdown {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+    border: 1px solid #eef0f3;
+    overflow: hidden;
+  }
+  .breakdown-header {
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid #eef0f3;
+    font-weight: 700;
+    font-size: 1rem;
+    color: #1e293b;
+  }
+  .category-row {
+    display: flex;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid #f1f5f9;
+  }
+  .category-row:last-child {
+    border-bottom: none;
+  }
+  .category-color {
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+    margin-right: 1rem;
+    flex-shrink: 0;
+  }
+  .category-name {
+    flex: 1;
+    font-weight: 500;
+    color: #334155;
+    font-size: 0.9375rem;
+  }
+  .category-stats {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    text-align: right;
+  }
+  .category-amount {
+    font-weight: 700;
+    color: #1e293b;
+    font-size: 1rem;
+  }
+  .category-count {
+    font-size: 0.8125rem;
+    color: #94a3b8;
+  }
+  .category-percent {
+    font-weight: 600;
+    color: #059669;
+    font-size: 0.9375rem;
+    background: #ecfdf5;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+  }
+  .empty-state {
+    padding: 4rem 2rem;
+    text-align: center;
+    color: #94a3b8;
+  }
+  .empty-state i {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+  }
+  .empty-state h4 {
+    color: #64748b;
+    margin-bottom: 0.5rem;
+  }
+  .filter-bar {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+    border: 1px solid #eef0f3;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .filter-bar .date-display {
+    font-size: 0.9375rem;
+    color: #475569;
+  }
+  .filter-bar .date-display strong {
+    color: #1e293b;
+  }
+  .filter-bar .btn {
+    padding: 0.625rem 1.25rem;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 0.875rem;
+  }
+  .filter-bar .btn-primary {
+    background: #059669;
+    border-color: #059669;
+  }
+  .filter-bar .btn-primary:hover {
+    background: #047857;
+    border-color: #047857;
+  }
+  .dot-Food, .dot-Transport, .dot-Shopping, .dot-Bills,
+  .dot-Entertainment, .dot-Health, .dot-Education, .dot-Other { background: #a7f3d0; }
+  .bar-Food .bar-fill,
+  .bar-Transport .bar-fill,
+  .bar-Shopping .bar-fill,
+  .bar-Bills .bar-fill,
+  .bar-Entertainment .bar-fill,
+  .bar-Health .bar-fill,
+  .bar-Education .bar-fill,
+  .bar-Other .bar-fill { background: #a7f3d0; }
+  @media (max-width: 768px) {
+    .chart-container {
+      height: 300px;
+    }
+    .category-stats {
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 0.5rem;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="reports-page">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+      <div>
+        <h1 class="h3 mb-1 fw-bold"><i class="bi bi-bar-chart me-2"></i>Reports</h1>
+        <p class="text-muted mb-0">Visualize your spending by category</p>
+      </div>
+      <div class="d-flex gap-2">
+        <a href="{% url 'filter_expenses' %}?start_date={{ start_date }}&end_date={{ end_date }}" class="btn btn-outline-secondary">
+          <i class="bi bi-funnel me-1"></i>Filter
+        </a>
+        <a href="{% url 'dashboard' %}" class="btn btn-primary">
+          <i class="bi bi-house me-1"></i>Dashboard
+        </a>
+      </div>
+    </div>
+
+    <!-- Filter Bar -->
+    <div class="filter-bar">
+      <div class="date-display">
+        Showing data from <strong>{{ start_date|date:"M d, Y" }}</strong> to <strong>{{ end_date|date:"M d, Y" }}</strong>
+      </div>
+      <a href="{% url 'filter_expenses' %}?start_date={{ start_date }}&end_date={{ end_date }}" class="btn btn-outline-primary">
+        <i class="bi bi-calendar-event me-1"></i>Change Date Range
+      </a>
+    </div>
+
+    <!-- Stats Row -->
+    <div class="row g-4 mb-4">
+      <div class="col-6 col-md-3">
+        <div class="stat-card text-center">
+          <div class="stat-icon stat-icon-primary mx-auto">
+            <i class="bi bi-cash-stack"></i>
+          </div>
+          <div class="stat-value">₹{{ total|floatformat:2 }}</div>
+          <div class="stat-label">Total Expenses</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="stat-card text-center">
+          <div class="stat-icon stat-icon-success mx-auto">
+            <i class="bi bi-tag"></i>
+          </div>
+          <div class="stat-value">{{ category_summary|length }}</div>
+          <div class="stat-label">Categories Used</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="stat-card text-center">
+          <div class="stat-icon stat-icon-warning mx-auto">
+            <i class="bi bi-receipt"></i>
+          </div>
+          <div class="stat-value">{{ total_count }}</div>
+          <div class="stat-label">Total Transactions</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="stat-card text-center">
+          <div class="stat-icon stat-icon-danger mx-auto">
+            <i class="bi bi-graph-up"></i>
+          </div>
+          <div class="stat-value">
+            {% if category_summary %}
+              {{ category_summary.0.percentage }}%
+            {% else %}
+              0%
+            {% endif %}
+          </div>
+          <div class="stat-label">Top Category Share</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chart & Breakdown -->
+    <div class="row g-4">
+      <div class="col-lg-5">
+        <div class="chart-card">
+          <div class="chart-header">
+            <h3><i class="bi bi-bar-chart me-2"></i>Spending by Category</h3>
+          </div>
+          {% if category_summary %}
+          <div style="padding: 0.5rem 0;">
+            {% for cat in category_summary %}
+            <div class="bar-row bar-{{ cat.category }}" style="display:flex; align-items:center; gap:0.75rem; margin-bottom:0.75rem;">
+              <span style="width:85px; font-size:0.8125rem; font-weight:600; color:#334155; flex-shrink:0;">{{ cat.category }}</span>
+              <div style="flex:1; height:24px; background:#f1f5f9; border-radius:6px; overflow:hidden;">
+                <div class="bar-fill" style="width:{{ cat.percentage }}%; height:100%; border-radius:6px; min-width:4px;"></div>
+              </div>
+              <span style="width:70px; text-align:right; font-size:0.8125rem; font-weight:700; color:#1e293b; flex-shrink:0;">₹{{ cat.total|floatformat:0 }}</span>
+            </div>
+            {% endfor %}
+          </div>
+          {% else %}
+          <div class="empty-state">
+            <i class="bi bi-bar-chart"></i>
+            <h4>No data to display</h4>
+            <p>Add expenses to see your spending breakdown.</p>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+      <div class="col-lg-7">
+        <!-- Category Breakdown Table -->
+        <div class="category-breakdown">
+          <div class="breakdown-header">
+            <i class="bi bi-grid-3x3-gap me-2"></i>Category Breakdown
+          </div>
+          {% if category_summary %}
+            {% for cat in category_summary %}
+            <div class="category-row">
+              <div class="category-color dot-{{ cat.category }}"></div>
+              <span class="category-name">{{ cat.category }}</span>
+              <div class="category-stats">
+                <div>
+                  <div class="category-amount">₹{{ cat.total|floatformat:2 }}</div>
+                  <div class="category-count">{{ cat.count }} transaction{{ cat.count|pluralize }}</div>
+                </div>
+                <span class="category-percent">{{ cat.percentage }}%</span>
+              </div>
+            </div>
+            {% endfor %}
+          {% else %}
+            <div class="empty-state" style="border: none;">
+              <i class="bi bi-tag"></i>
+              <h4>No categories yet</h4>
+              <p>Add expenses with categories to see breakdown.</p>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

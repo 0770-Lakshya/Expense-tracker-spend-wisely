@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-md-5">
+      <div class="card">
+        <div class="card-body p-5">
+          <div class="text-center mb-4">
+            <div class="d-inline-flex align-items-center justify-content-center bg-indigo-50 rounded-circle mb-3" style="width: 64px; height: 64px;">
+              <i class="bi bi-person-plus fs-1 text-indigo-600"></i>
+            </div>
+            <h2 class="fw-bold text-gray-900">Create Account</h2>
+            <p class="text-muted">Start tracking your expenses today</p>
+          </div>
+
+          <form method="post">
+            {% csrf_token %}
+            {% for field in form %}
+            <div class="mb-3">
+              <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+              {{ field }}
+              {% if field.help_text %}
+              <div class="form-text">{{ field.help_text }}</div>
+              {% endif %}
+              {% for error in field.errors %}
+              <div class="text-danger small mt-1">{{ error }}</div>
+              {% endfor %}
+            </div>
+            {% endfor %}
+            <button type="submit" class="btn btn-primary w-100 py-2 fw-medium">
+              <i class="bi bi-person-plus me-1"></i>Create Account
+            </button>
+          </form>
+
+          <div class="text-center mt-4">
+            <p class="text-muted mb-0">Already have an account?
+              <a href="{% url 'login' %}" class="fw-medium text-indigo-600">Sign in</a>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .bg-indigo-50 { background-color: #eef2ff; }
+  .text-indigo-600 { color: #4f46e5; }
+  .text-gray-900 { color: #111827; }
+  #id_username, #id_password1, #id_password2 {
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    padding: 0.75rem 1rem;
+    width: 100%;
+    font-size: 1rem;
+    transition: all 0.2s ease;
+  }
+  #id_username:focus, #id_password1:focus, #id_password2:focus {
+    border-color: #4f46e5;
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+    outline: none;
+  }
+</style>
+{% endblock %}
