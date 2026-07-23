@@ -1,5 +1,5 @@
 import json
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
@@ -7,6 +7,7 @@ from django.contrib.auth import login
 from django.contrib.auth.forms import UserCreationForm
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db.models import Sum
+from django.db.models.functions import TruncMonth
 from django.utils import timezone
 from .models import Expense, CATEGORY_CHOICES
 
@@ -109,11 +110,18 @@ def filter_expenses(request):
     expenses = _get_filtered_expenses(request.user, start_date, end_date)
     total = expenses.aggregate(Sum('amount'))['amount__sum'] or 0
 
+    today = date.today()
+    last_month_end = today.replace(day=1) - timedelta(days=1)
+    last_month_start = last_month_end.replace(day=1)
+
     context = {
         'expenses': expenses,
         'total': total,
         'start_date': start_date.isoformat(),
         'end_date': end_date.isoformat(),
+        'today': today,
+        'last_month_start': last_month_start.isoformat(),
+        'last_month_end': last_month_end.isoformat(),
     }
     return render(request, 'expenses/filter.html', context)
 
@@ -137,16 +145,40 @@ def reports(request):
             'percentage': round((cat['total'] / total * 100) if total > 0 else 0, 1)
         })
 
+    monthly_data = list(
+        Expense.objects.filter(user=request.user, date__gte=start_date, date__lte=end_date)
+        .annotate(month=TruncMonth('date'))
+        .values('month')
+        .annotate(total=Sum('amount'))
+        .order_by('month')
+    )
+    for m in monthly_data:
+        m['month_label'] = m['month'].strftime('%b %Y') if m['month'] else ''
+
     context = {
         'category_data': category_data,
         'category_data_json': json.dumps(category_data, cls=DjangoJSONEncoder),
         'category_summary': category_summary,
+        'monthly_data': monthly_data,
         'total': total,
         'total_count': expenses.count(),
         'start_date': start_date.isoformat(),
         'end_date': end_date.isoformat(),
     }
     return render(request, 'expenses/reports.html', context)
+
+
+@login_required
+def edit_expense(request, expense_id):
+    expense = get_object_or_404(Expense, id=expense_id, user=request.user)
+    if request.method == 'POST':
+        expense.title = request.POST.get('title')
+        expense.amount = request.POST.get('amount')
+        expense.category = request.POST.get('category')
+        expense.date = request.POST.get('date')
+        expense.save()
+        return redirect(request.POST.get('next', '/'))
+    return redirect('/')
 
 
 @login_required

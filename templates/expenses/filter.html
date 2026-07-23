@@ -4,144 +4,16 @@
 
 {% block extra_css %}
 <style>
-  .filter-page {
-    max-width: 800px;
-    margin: 0 auto;
-  }
-  .filter-card {
-    background: white;
-    border-radius: 16px;
-    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
-    border: 1px solid #eef0f3;
-    padding: 2rem;
-    margin-bottom: 1.5rem;
-  }
-  .filter-form {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1.5rem;
-    align-items: flex-end;
-  }
-  .filter-field {
-    flex: 1;
-    min-width: 180px;
-  }
-  .filter-field label {
-    display: block;
-    font-size: 0.8125rem;
-    font-weight: 600;
-    color: #475569;
-    margin-bottom: 0.5rem;
-  }
-  .filter-field input[type="date"] {
-    width: 100%;
-    padding: 0.75rem 1rem;
-    border: 1px solid #e2e8f0;
-    border-radius: 10px;
-    font-size: 1rem;
-    background: #fafafa;
-    transition: all 0.2s;
-  }
-  .filter-field input[type="date"]:focus {
-    outline: none;
-    border-color: #059669;
-    box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.1);
-    background: white;
-  }
+  .filter-page { max-width: 800px; margin: 0 auto; }
+  .filter-form { display: flex; flex-wrap: wrap; gap: 1.5rem; align-items: flex-end; }
+  .filter-field { flex: 1; min-width: 180px; }
   .btn-filter {
-    padding: 0.75rem 1.5rem;
-    background: #059669;
-    color: white;
-    border: none;
-    border-radius: 10px;
-    font-weight: 600;
-    font-size: 0.9375rem;
-    cursor: pointer;
-    transition: all 0.2s;
+    padding: 0.75rem 1.5rem; background: #059669; color: white; border: none;
+    border-radius: 10px; font-weight: 600; font-size: 0.9375rem; cursor: pointer; transition: all 0.2s;
   }
-  .btn-filter:hover {
-    background: #047857;
-    transform: translateY(-1px);
-  }
-  .btn-reset {
-    padding: 0.75rem 1.5rem;
-    background: white;
-    color: #64748b;
-    border: 1px solid #e2e8f0;
-    border-radius: 10px;
-    font-weight: 600;
-    font-size: 0.9375rem;
-    cursor: pointer;
-    transition: all 0.2s;
-    text-decoration: none;
-    display: inline-flex;
-    align-items: center;
-  }
-  .btn-reset:hover {
-    background: #f8fafc;
-    color: #334155;
-    border-color: #cbd5e1;
-  }
-  .results-card {
-    background: white;
-    border-radius: 16px;
-    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
-    border: 1px solid #eef0f3;
-    overflow: hidden;
-  }
-  .results-header {
-    padding: 1.5rem 2rem;
-    border-bottom: 1px solid #eef0f3;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-  .results-header h3 {
-    margin: 0;
-    font-size: 1.125rem;
-    font-weight: 700;
-    color: #1e293b;
-  }
-  .results-total {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: #ef4444;
-  }
-  .results-table {
-    width: 100%;
-    border-collapse: collapse;
-  }
-  .results-table th {
-    padding: 1rem 1.5rem;
-    text-align: left;
-    font-size: 0.75rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: #64748b;
-    background: #fafafa;
-    border-bottom: 1px solid #eef0f3;
-  }
-  .results-table td {
-    padding: 1rem 1.5rem;
-    border-bottom: 1px solid #f1f5f9;
-    font-size: 0.9375rem;
-    color: #334155;
-  }
-  .results-table tr:last-child td {
-    border-bottom: none;
-  }
-  .results-table tr:hover td {
-    background: #fafafa;
-  }
-  .category-badge {
-    display: inline-flex;
-    align-items: center;
-    padding: 0.25rem 0.75rem;
-    font-size: 0.75rem;
-    font-weight: 600;
-    border-radius: 9999px;
-  }
+  .btn-filter:hover { background: #047857; transform: translateY(-1px); }
+  .results-total { font-size: 1.5rem; font-weight: 700; color: var(--danger); }
+  .category-badge { display: inline-flex; align-items: center; padding: 0.25rem 0.75rem; font-size: 0.75rem; font-weight: 600; border-radius: 9999px; }
   .category-Food { background: #fef2f2; color: #dc2626; }
   .category-Transport { background: #eff6ff; color: #2563eb; }
   .category-Shopping { background: #f5f3ff; color: #7c3aed; }
@@ -150,63 +22,18 @@
   .category-Health { background: #f0fdf4; color: #16a34a; }
   .category-Education { background: #eff6ff; color: #2563eb; }
   .category-Other { background: #f1f5f9; color: #475569; }
-  .amount-cell {
-    font-weight: 600;
-    color: #ef4444;
-  }
-  .empty-state {
-    padding: 4rem 2rem;
-    text-align: center;
-    color: #94a3b8;
-  }
-  .empty-state i {
-    font-size: 3rem;
-    margin-bottom: 1rem;
-    opacity: 0.5;
-  }
-  .empty-state h4 {
-    color: #64748b;
-    margin-bottom: 0.5rem;
-  }
-  .quick-filters {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    margin-bottom: 1.5rem;
-  }
-  .quick-filter {
-    padding: 0.5rem 1rem;
-    background: white;
-    border: 1px solid #e2e8f0;
-    border-radius: 9999px;
-    font-size: 0.8125rem;
-    font-weight: 500;
-    color: #475569;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-  .quick-filter:hover {
-    background: #059669;
-    border-color: #059669;
-    color: white;
-  }
-  .quick-filter.active {
-    background: #059669;
-    border-color: #059669;
-    color: white;
-  }
+  [data-theme="dark"] .category-Food { background: #450a0a; color: #fca5a5; }
+  [data-theme="dark"] .category-Transport { background: #0c1929; color: #93c5fd; }
+  [data-theme="dark"] .category-Shopping { background: #1e0a29; color: #c4b5fd; }
+  [data-theme="dark"] .category-Bills { background: #291d00; color: #fcd34d; }
+  [data-theme="dark"] .category-Entertainment { background: #1f0a33; color: #d8b4fe; }
+  [data-theme="dark"] .category-Health { background: #022c22; color: #6ee7b7; }
+  [data-theme="dark"] .category-Education { background: #0c1929; color: #93c5fd; }
+  [data-theme="dark"] .category-Other { background: #1e293b; color: #94a3b8; }
   @media (max-width: 640px) {
-    .filter-form {
-      flex-direction: column;
-      align-items: stretch;
-    }
-    .filter-field {
-      width: 100%;
-    }
-    .btn-filter, .btn-reset {
-      width: 100%;
-      justify-content: center;
-    }
+    .filter-form { flex-direction: column; align-items: stretch; }
+    .filter-field { width: 100%; }
+    .btn-filter, .btn-reset { width: 100%; justify-content: center; }
   }
 </style>
 {% endblock %}

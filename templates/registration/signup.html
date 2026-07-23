@@ -7,10 +7,10 @@
       <div class="card">
         <div class="card-body p-5">
           <div class="text-center mb-4">
-            <div class="d-inline-flex align-items-center justify-content-center bg-indigo-50 rounded-circle mb-3" style="width: 64px; height: 64px;">
-              <i class="bi bi-person-plus fs-1 text-indigo-600"></i>
+            <div class="d-inline-flex align-items-center justify-content-center rounded-circle mb-3" style="width: 64px; height: 64px; background: var(--primary-light);">
+              <i class="bi bi-person-plus fs-1" style="color: var(--primary);"></i>
             </div>
-            <h2 class="fw-bold text-gray-900">Create Account</h2>
+            <h2 class="fw-bold" style="color: var(--text);">Create Account</h2>
             <p class="text-muted">Start tracking your expenses today</p>
           </div>
 
@@ -35,7 +35,7 @@
 
           <div class="text-center mt-4">
             <p class="text-muted mb-0">Already have an account?
-              <a href="{% url 'login' %}" class="fw-medium text-indigo-600">Sign in</a>
+              <a href="{% url 'login' %}" class="fw-medium" style="color: var(--primary);">Sign in</a>
             </p>
           </div>
         </div>
@@ -45,21 +45,21 @@
 </div>
 
 <style>
-  .bg-indigo-50 { background-color: #eef2ff; }
-  .text-indigo-600 { color: #4f46e5; }
-  .text-gray-900 { color: #111827; }
   #id_username, #id_password1, #id_password2 {
-    border-radius: 8px;
-    border: 1px solid #e2e8f0;
-    padding: 0.75rem 1rem;
     width: 100%;
+    padding: 0.75rem 1rem;
     font-size: 1rem;
-    transition: all 0.2s ease;
+    border-radius: 10px;
+    border: 2px solid var(--border);
+    background: var(--input-bg);
+    color: var(--text);
+    transition: all 0.2s;
   }
   #id_username:focus, #id_password1:focus, #id_password2:focus {
-    border-color: #4f46e5;
-    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.15);
     outline: none;
+    background: var(--input-bg);
   }
 </style>
 {% endblock %}

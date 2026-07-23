@@ -115,6 +115,15 @@
                                 </td>
                                 <td class="fw-medium text-danger">₹{{ expense.amount|floatformat:2 }}</td>
                                 <td>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary me-1"
+                                            data-bs-toggle="modal" data-bs-target="#editModal"
+                                            data-id="{{ expense.id }}"
+                                            data-title="{{ expense.title }}"
+                                            data-amount="{{ expense.amount }}"
+                                            data-category="{{ expense.category }}"
+                                            data-date="{{ expense.date|date:'Y-m-d' }}">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
                                     <form method="POST"
                                           action="{% url 'delete_expense' expense.id %}?start_date={{ start_date }}&end_date={{ end_date }}"
                                           style="display: inline;">
@@ -142,4 +151,65 @@
         </div>
     </div>
 </div>
+
+<!-- Edit Expense Modal -->
+<div class="modal fade" id="editModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="POST" id="editForm">
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{{ request.get_full_path }}">
+        <div class="modal-header">
+          <h5 class="modal-title"><i class="bi bi-pencil me-2"></i>Edit Expense</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">Title</label>
+            <input type="text" id="edit-title" name="title" class="form-control" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Amount (₹)</label>
+            <input type="number" id="edit-amount" name="amount" class="form-control" step="0.01" min="0.01" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Category</label>
+            <select id="edit-category" name="category" class="form-select" required>
+              {% for cat in categories %}
+                <option value="{{ cat }}">{{ cat }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Date</label>
+            <input type="date" id="edit-date" name="date" class="form-control" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg me-1"></i>Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const editModal = document.getElementById('editModal');
+    if (editModal) {
+        editModal.addEventListener('show.bs.modal', function(event) {
+            const btn = event.relatedTarget;
+            const form = document.getElementById('editForm');
+            form.action = "{% url 'edit_expense' 0 %}".replace('0', btn.dataset.id);
+            document.getElementById('edit-title').value = btn.dataset.title;
+            document.getElementById('edit-amount').value = btn.dataset.amount;
+            document.getElementById('edit-category').value = btn.dataset.category;
+            document.getElementById('edit-date').value = btn.dataset.date;
+        });
+    }
+});
+</script>
 {% endblock %}
