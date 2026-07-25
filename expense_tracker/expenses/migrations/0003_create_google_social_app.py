@@ -34,7 +34,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('sites', '0002_alter_domain_unique'),
-        ('allauth.socialaccount', '0006_alter_socialaccount_extra_data'),
+        ('socialaccount', '0006_alter_socialaccount_extra_data'),
         ('expenses', '0002_set_site_domain'),
     ]
 
