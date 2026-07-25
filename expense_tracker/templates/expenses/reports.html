@@ -1,0 +1,230 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Reports - Expense Tracker{% endblock %}
+
+{% block extra_css %}
+<style>
+  .reports-page { max-width: 1000px; margin: 0 auto; }
+  .stat-icon {
+    width: 48px; height: 48px; border-radius: 12px; display: flex;
+    align-items: center; justify-content: center; font-size: 1.25rem; margin-bottom: 1rem;
+  }
+  .stat-icon-primary { background: #ecfdf5; color: #059669; }
+  .stat-icon-danger { background: #fef2f2; color: #ef4444; }
+  .stat-icon-success { background: #f0fdf4; color: #22c55e; }
+  .stat-icon-warning { background: #fffbeb; color: #f59e0b; }
+  .chart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+  .chart-container { position: relative; height: 300px; width: 100%; max-width: 400px; margin: 0 auto; }
+  .category-color { width: 12px; height: 12px; border-radius: 3px; margin-right: 1rem; flex-shrink: 0; }
+  .category-stats { display: flex; align-items: center; gap: 1.5rem; text-align: right; }
+  .category-percent { background: var(--primary-light); padding: 0.25rem 0.75rem; border-radius: 9999px; }
+  .filter-bar .btn { padding: 0.625rem 1.25rem; border-radius: 10px; font-weight: 600; font-size: 0.875rem; }
+  .filter-bar .btn-primary { background: #059669; border-color: #059669; }
+  .filter-bar .btn-primary:hover { background: #047857; border-color: #047857; }
+  .dot-Food, .dot-Transport, .dot-Shopping, .dot-Bills,
+  .dot-Entertainment, .dot-Health, .dot-Education, .dot-Other { background: #a7f3d0; }
+  .bar-Food .bar-fill, .bar-Transport .bar-fill, .bar-Shopping .bar-fill,
+  .bar-Bills .bar-fill, .bar-Entertainment .bar-fill, .bar-Health .bar-fill,
+  .bar-Education .bar-fill, .bar-Other .bar-fill { background: #a7f3d0; }
+  [data-theme="dark"] .filter-bar .btn-primary { background: #065f46; border-color: #065f46; }
+  [data-theme="dark"] .filter-bar .btn-primary:hover { background: #047857; border-color: #047857; }
+  [data-theme="dark"] .stat-icon-primary { background: #064e3b; color: #6ee7b7; }
+  [data-theme="dark"] .stat-icon-danger { background: #450a0a; color: #fca5a5; }
+  [data-theme="dark"] .stat-icon-success { background: #052e16; color: #4ade80; }
+  [data-theme="dark"] .stat-icon-warning { background: #291d00; color: #fcd34d; }
+  @media (max-width: 768px) {
+    .chart-container { height: 300px; }
+    .category-stats { flex-direction: column; align-items: flex-end; gap: 0.5rem; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="reports-page">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+      <div>
+        <div class="d-flex align-items-center gap-3">
+        <lord-icon
+            src="{% static 'lordicon/bargraph.json' %}"
+            trigger="loop"
+            state="loop"
+            style="width:100px;height:100px"
+            colors="primary:#059669,secondary:#34d399"
+        >
+        </lord-icon>
+        <div>
+        <h1 class="h3 mb-1 fw-bold">Reports</h1>
+        <p class="text-muted mb-0">Visualize your spending by category</p>
+      </div>
+      </div>
+      </div>
+      <div class="d-flex gap-2">
+        <a href="{% url 'filter_expenses' %}?start_date={{ start_date }}&end_date={{ end_date }}" class="btn btn-outline-secondary">
+          <i class="bi bi-funnel me-1"></i>Filter
+        </a>
+        <a href="{% url 'dashboard' %}" class="btn btn-primary">
+          <i class="bi bi-house me-1"></i>Dashboard
+        </a>
+      </div>
+    </div>
+
+    <!-- Filter Bar -->
+    <div class="filter-bar">
+      <div class="date-display">
+        Showing data from <strong>{{ start_date|date:"M d, Y" }}</strong> to <strong>{{ end_date|date:"M d, Y" }}</strong>
+      </div>
+      <a href="{% url 'filter_expenses' %}?start_date={{ start_date }}&end_date={{ end_date }}" class="btn btn-outline-primary">
+        <i class="bi bi-calendar-event me-1"></i>Change Date Range
+      </a>
+    </div>
+
+    <!-- Stats Row -->
+    <div class="row g-4 mb-4">
+      <div class="col-6 col-md-3">
+        <div class="stat-card text-center">
+          <div class="stat-icon stat-icon-primary mx-auto">
+            <lord-icon
+              src="{% static 'lordicon/wallet.json' %}"
+               trigger="loop"
+               state="loop"
+               style="width:100px;height:100px"
+               colors="primary:#059669,secondary:#34d399"
+            >
+            </lord-icon>
+          </div>
+          <div class="stat-value">₹{{ total|floatformat:2 }}</div>
+          <div class="stat-label">Total Expenses</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="stat-card text-center">
+          <div class="stat-icon stat-icon-success mx-auto">
+            <i class="bi bi-tag"></i>
+          </div>
+          <div class="stat-value">{{ category_summary|length }}</div>
+          <div class="stat-label">Categories Used</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="stat-card text-center">
+          <div class="stat-icon stat-icon-warning mx-auto">
+            <i class="bi bi-receipt"></i>
+          </div>
+          <div class="stat-value">{{ total_count }}</div>
+          <div class="stat-label">Total Transactions</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="stat-card text-center">
+          <div class="stat-icon stat-icon-danger mx-auto">
+            <i class="bi bi-graph-up"></i>
+          </div>
+          <div class="stat-value">
+            {% if category_summary %}
+              {{ category_summary.0.percentage }}%
+            {% else %}
+              0%
+            {% endif %}
+          </div>
+          <div class="stat-label">Top Category Share</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chart & Breakdown -->
+    <div class="row g-4">
+      <div class="col-lg-5">
+        <div class="chart-card">
+          <div class="chart-header">
+            <h3><i class="bi bi-bar-chart me-2"></i>Spending by Category</h3>
+          </div>
+          {% if category_summary %}
+          <div style="padding: 0.5rem 0;">
+            {% for cat in category_summary %}
+            <div class="bar-row bar-{{ cat.category }}" style="display:flex; align-items:center; gap:0.75rem; margin-bottom:0.75rem;">
+              <span style="width:85px; font-size:0.8125rem; font-weight:600; color:var(--text); flex-shrink:0;">{{ cat.category }}</span>
+              <div style="flex:1; height:24px; background:#f1f5f9; border-radius:6px; overflow:hidden;">
+                <div class="bar-fill" style="width:{{ cat.percentage }}%; height:100%; border-radius:6px; min-width:4px;"></div>
+              </div>
+              <span style="width:70px; text-align:right; font-size:0.8125rem; font-weight:700; color:var(--text); flex-shrink:0;">₹{{ cat.total|floatformat:0 }}</span>
+            </div>
+            {% endfor %}
+          </div>
+          {% else %}
+          <div class="empty-state">
+            <i class="bi bi-bar-chart"></i>
+            <h4>No data to display</h4>
+            <p>Add expenses to see your spending breakdown.</p>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+      <div class="col-lg-7">
+        <!-- Category Breakdown Table -->
+        <div class="category-breakdown">
+          <div class="breakdown-header">
+            <i class="bi bi-grid-3x3-gap me-2"></i>Category Breakdown
+          </div>
+          {% if category_summary %}
+            {% for cat in category_summary %}
+            <div class="category-row">
+              <div class="category-color dot-{{ cat.category }}"></div>
+              <span class="category-name">{{ cat.category }}</span>
+              <div class="category-stats">
+                <div>
+                  <div class="category-amount">₹{{ cat.total|floatformat:2 }}</div>
+                  <div class="category-count">{{ cat.count }} transaction{{ cat.count|pluralize }}</div>
+                </div>
+                <span class="category-percent">{{ cat.percentage }}%</span>
+              </div>
+            </div>
+            {% endfor %}
+          {% else %}
+            <div class="empty-state" style="border: none;">
+              <i class="bi bi-tag"></i>
+              <h4>No categories yet</h4>
+              <p>Add expenses with categories to see breakdown.</p>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Monthly Comparison -->
+    <div class="row g-4 mt-2">
+      <div class="col-12">
+        <div class="chart-card">
+          <div class="chart-header">
+            <h3><i class="bi bi-graph-up me-2"></i>Monthly Comparison</h3>
+          </div>
+          {% if monthly_data %}
+          <div style="padding: 0.5rem 0;">
+            {% for m in monthly_data %}
+            {% with max_total=monthly_data.0.total %}
+            <div style="display:flex; align-items:center; gap:0.75rem; margin-bottom:0.75rem;">
+              <span style="width:90px; font-size:0.8125rem; font-weight:600; color:var(--text); flex-shrink:0;">{{ m.month_label }}</span>
+              <div style="flex:1; height:28px; background:#f1f5f9; border-radius:6px; overflow:hidden;">
+                <div style="width:{% widthratio m.total max_total 100 %}%; height:100%; border-radius:6px; min-width:4px; background: linear-gradient(90deg, #059669, #34d399);"></div>
+              </div>
+              <span style="width:90px; text-align:right; font-size:0.875rem; font-weight:700; color:var(--text); flex-shrink:0;">₹{{ m.total|floatformat:0 }}</span>
+            </div>
+            {% endwith %}
+            {% endfor %}
+          </div>
+          {% else %}
+          <div class="empty-state">
+            <i class="bi bi-graph-up"></i>
+            <h4>No monthly data</h4>
+            <p>Add expenses across multiple months to see comparison.</p>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

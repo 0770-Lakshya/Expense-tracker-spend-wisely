@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-md-5">
+      <div class="card">
+        <div class="card-body p-5">
+          <div class="text-center mb-4">
+            <div class="position-relative d-inline-block">
+                <lord-icon
+                    src="{% static 'lordicon/cardswip.json' %}"
+                    trigger="loop"
+                    state="loop"
+                    style="width:100px;height:100px"
+                    colors="primary:#4f46e5,secondary:#a5b4fc"
+                >
+                </lord-icon>
+                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill" style="background: var(--primary); font-size: 0.65rem;">NEW</span>
+            </div>
+            <h2 class="fw-bold" style="color: var(--text);">Create Account</h2>
+            <p class="text-muted">Start tracking your expenses today</p>
+          </div>
+
+          <form method="post">
+            {% csrf_token %}
+            {% for field in form %}
+            <div class="mb-3">
+              <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+              {{ field }}
+              {% if field.help_text %}
+              <div class="form-text">{{ field.help_text }}</div>
+              {% endif %}
+              {% for error in field.errors %}
+              <div class="text-danger small mt-1">{{ error }}</div>
+              {% endfor %}
+            </div>
+            {% endfor %}
+            <button type="submit" class="btn btn-primary w-100 py-2 fw-medium">
+              <i class="bi bi-person-plus me-1"></i>Create Account
+            </button>
+          </form>
+
+          <div class="text-center mt-4">
+            <p class="text-muted mb-0">Already have an account?
+              <a href="{% url 'login' %}" class="fw-medium" style="color: var(--primary);">Sign in</a>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  #id_username, #id_password1, #id_password2 {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    border-radius: 10px;
+    border: 2px solid var(--border);
+    background: var(--input-bg);
+    color: var(--text);
+    transition: all 0.2s;
+  }
+  #id_username:focus, #id_password1:focus, #id_password2:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.15);
+    outline: none;
+    background: var(--input-bg);
+  }
+</style>
+{% endblock %}
