@@ -1,14 +1,16 @@
 #!/usr/bin/env bash
 set -e
 
-echo "==> Installing Python dependencies"
-pip install --upgrade pip
-pip install -r requirements.txt
+echo "==> [1/4] Upgrading pip"
+python -m pip install --upgrade pip
 
-echo "==> Collecting static files"
+echo "==> [2/4] Installing Python dependencies from requirements.txt"
+python -m pip install -r requirements.txt
+
+echo "==> [3/4] Collecting static files"
 python manage.py collectstatic --no-input
 
-echo "==> Running database migrations"
+echo "==> [4/4] Running database migrations"
 python manage.py migrate --no-input
 
-echo "==> Build complete"
+echo "==> Build completed successfully"
