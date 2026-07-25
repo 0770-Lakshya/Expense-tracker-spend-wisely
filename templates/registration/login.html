@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block content %}
 <div class="container py-5">
@@ -7,8 +8,16 @@
       <div class="card">
         <div class="card-body p-5">
           <div class="text-center mb-4">
-            <div class="d-inline-flex align-items-center justify-content-center rounded-circle mb-3" style="width: 64px; height: 64px; background: var(--primary-light);">
-              <i class="bi bi-box-arrow-in-right fs-1" style="color: var(--primary);"></i>
+            <div class="position-relative d-inline-block">
+                <lord-icon
+                    src="{% static 'lordicon/cardswip.json' %}"
+                    trigger="loop"
+                    state="loop"
+                    style="width:100px;height:100px"
+                    colors="primary:#4f46e5,secondary:#a5b4fc"
+                >
+                </lord-icon>
+                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill" style="background: var(--primary); font-size: 0.65rem;">NEW</span>
             </div>
             <h2 class="fw-bold" style="color: var(--text);">Welcome Back</h2>
             <p class="text-muted">Sign in to your expense tracker</p>
