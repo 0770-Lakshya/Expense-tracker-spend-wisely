@@ -4,44 +4,46 @@ from django.core.management.base import BaseCommand
 
 
 class Command(BaseCommand):
-    help = 'Ensure exactly one Google SocialApp exists with env var credentials'
+    help = 'Configure Site domain and Google SocialApp from env vars'
 
     def handle(self, *args, **options):
+        self._configure_site()
+        self._configure_google_socialapp()
+
+    def _configure_site(self):
         try:
-            from allauth.socialaccount.models import SocialApp
             from django.contrib.sites.models import Site
         except ImportError:
-            self.stdout.write('Skipping: allauth not installed')
             return
 
-        client_id = os.environ.get('GOOGLE_CLIENT_ID', '').strip()
-        secret = os.environ.get('GOOGLE_CLIENT_SECRET', '').strip()
+        try:
+            domain = os.environ.get('RENDER_EXTERNAL_URL', '').rstrip('/')
+            if not domain:
+                return
+            domain = domain.replace('https://', '').replace('http://', '').split('/')[0]
+            Site.objects.update_or_create(
+                id=settings.SITE_ID,
+                defaults={'domain': domain, 'name': 'Expense Tracker'},
+            )
+            self.stdout.write(f'Site domain set to {domain}')
+        except Exception as e:
+            self.stdout.write(f'Skipping site config: {e}')
 
-        qs = SocialApp.objects.filter(provider='google').order_by('pk')
+    def _configure_google_socialapp(self):
+        try:
+            from allauth.socialaccount.models import SocialApp
+        except ImportError:
+            self.stdout.write('Skipping SocialApp: allauth not installed')
+            return
 
-        if qs.count() > 1:
-            keep = qs.last()
-            deleted = qs.exclude(pk=keep.pk).delete()[0]
-            self.stdout.write(f'Deleted {deleted} duplicate Google SocialApp(s)')
-            app = keep
-        elif qs.count() == 1:
-            app = qs.first()
-            self.stdout.write('Found existing Google SocialApp')
-        else:
-            app = SocialApp(provider='google')
-            self.stdout.write('Creating new Google SocialApp')
-
-        if client_id:
-            app.client_id = client_id
-        if secret:
-            app.secret = secret
-        app.name = 'Google'
-        app.key = ''
-        app.save()
-
-        site = Site.objects.get_current()
-        app.sites.add(site)
-
-        self.stdout.write(self.style.SUCCESS(
-            f'Google SocialApp configured (client_id={client_id[:8]}...)'
-        ))
+        try:
+            qs = SocialApp.objects.filter(provider='google')
+            count = qs.count()
+            if count:
+                qs.delete()
+                self.stdout.write(f'Deleted {count} Google SocialApp record(s)')
+            self.stdout.write(self.style.SUCCESS(
+                'Google SocialApp will use SOCIALACCOUNT_PROVIDERS settings (env vars)'
+            ))
+        except Exception as e:
+            self.stdout.write(f'Skipping SocialApp config: {e}')
