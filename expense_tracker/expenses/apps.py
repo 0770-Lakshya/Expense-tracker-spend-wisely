@@ -1,14 +1,19 @@
 import os
 from django.apps import AppConfig
 from django.conf import settings
+from django.db.models.signals import post_migrate
 
 
 class ExpensesConfig(AppConfig):
     name = 'expenses'
 
     def ready(self):
-        _configure_site()
-        _configure_google_social_app()
+        post_migrate.connect(_run_setup, sender=self)
+
+
+def _run_setup(sender, **kwargs):
+    _configure_site()
+    _configure_google_social_app()
 
 
 def _configure_site():
@@ -27,11 +32,26 @@ def _configure_google_social_app():
         from django.contrib.sites.models import Site
         client_id = os.environ.get('GOOGLE_CLIENT_ID', '').strip()
         secret = os.environ.get('GOOGLE_CLIENT_SECRET', '').strip()
-        if client_id and secret:
-            app, _ = SocialApp.objects.update_or_create(
-                provider='google',
-                defaults={'name': 'Google', 'client_id': client_id, 'secret': secret},
-            )
-            app.sites.add(Site.objects.get_current())
+        if not client_id or not secret:
+            return
+
+        qs = SocialApp.objects.filter(provider='google').order_by('pk')
+
+        if qs.count() > 1:
+            keep = qs.last()
+            qs.exclude(pk=keep.pk).delete()
+            app = keep
+        elif qs.count() == 1:
+            app = qs.first()
+        else:
+            app = SocialApp(provider='google')
+
+        app.name = 'Google'
+        app.client_id = client_id
+        app.secret = secret
+        app.save()
+
+        site = Site.objects.get_current()
+        app.sites.add(site)
     except Exception:
         pass
