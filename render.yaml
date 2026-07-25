@@ -10,7 +10,7 @@ services:
     runtime: python
     plan: free
     rootDir: expense_tracker
-    buildCommand: "pip install -r requirements.txt && python manage.py collectstatic --no-input && python manage.py migrate"
+    buildCommand: "./build.sh"
     startCommand: "gunicorn expense_tracker.wsgi"
     envVars:
       - key: DATABASE_URL
