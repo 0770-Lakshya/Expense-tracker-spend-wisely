@@ -13,4 +13,7 @@ python manage.py collectstatic --no-input
 echo "==> [4/4] Running database migrations"
 python manage.py migrate --no-input
 
+echo "==> [5/5] Configuring Google SocialApp"
+python manage.py configure_google_socialapp || echo "Skipped (tables may not exist yet)"
+
 echo "==> Build completed successfully"
