@@ -1,6 +1,6 @@
 # Expense Tracker
 
-A personal expense tracking web application built with Django. Track, filter, and visualize your daily expenses with interactive charts.
+A personal expense tracking web application built with Django. Track, filter, and visualize your daily cash flow with interactive charts.
 
 ## Features
 
@@ -26,7 +26,7 @@ A personal expense tracking web application built with Django. Track, filter, an
 ### Prerequisites
 
 - Python 3.13+
-- pip
+
 
 ### Setup
 
@@ -47,16 +47,7 @@ python manage.py migrate
 python manage.py runserver
 ```
 
-## Environment Variables
 
-| Variable | Description |
-|---|---|
-| `DJANGO_SECRET_KEY` | Django secret key (auto-generated if empty) |
-| `DJANGO_DEBUG` | Set `True` for development |
-| `DJANGO_ALLOWED_HOSTS` | Comma-separated allowed hosts |
-| `DATABASE_URL` | Database URL (defaults to SQLite) |
-| `GOOGLE_CLIENT_ID` | Google OAuth client ID |
-| `GOOGLE_CLIENT_SECRET` | Google OAuth client secret |
 
 ## Deployment
 
