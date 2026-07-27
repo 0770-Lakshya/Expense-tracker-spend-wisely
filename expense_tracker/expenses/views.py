@@ -1,15 +1,19 @@
 import json
 from datetime import datetime, date, timedelta
+from urllib.parse import urlencode
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login
 from django.contrib.auth.forms import UserCreationForm
 from django.core.serializers.json import DjangoJSONEncoder
-from django.db.models import Sum
+from django.db.models import Sum, Count
 from django.db.models.functions import TruncMonth
-from django.utils import timezone
+from django.utils.http import url_has_allowed_host_and_scheme
+from django.conf import settings
 from .models import Expense, CATEGORY_CHOICES
+
+VALID_CATEGORIES = {c[0] for c in CATEGORY_CHOICES}
 
 
 def signup(request):
@@ -60,36 +64,64 @@ def _get_category_data(expenses):
     )
 
 
+def _validate_expense_data(title, amount_str, category, date_str):
+    errors = {}
+    if not title or not title.strip():
+        errors['title'] = 'Title is required'
+    if not amount_str:
+        errors['amount'] = 'Amount is required'
+    else:
+        try:
+            amount = float(amount_str)
+            if amount <= 0:
+                errors['amount'] = 'Amount must be positive'
+        except (ValueError, TypeError):
+            errors['amount'] = 'Invalid amount'
+    if category not in VALID_CATEGORIES:
+        errors['category'] = 'Invalid category'
+    if date_str:
+        try:
+            datetime.strptime(date_str, '%Y-%m-%d')
+        except (ValueError, TypeError):
+            errors['date'] = 'Invalid date format'
+    return errors
+
+
 @login_required
 def dashboard(request):
     """Main dashboard: add expense form + expense list."""
     today = date.today()
-    start_date = request.GET.get('start_date', today.replace(day=1).isoformat())
-    end_date = request.GET.get('end_date', today.isoformat())
-
-    try:
-        start_date = datetime.strptime(start_date, '%Y-%m-%d').date()
-    except (ValueError, TypeError):
-        start_date = today.replace(day=1)
-    try:
-        end_date = datetime.strptime(end_date, '%Y-%m-%d').date()
-    except (ValueError, TypeError):
-        end_date = today
+    start_date, end_date = _get_date_range(request)
 
     expenses = _get_filtered_expenses(request.user, start_date, end_date)
     total = expenses.aggregate(Sum('amount'))['amount__sum'] or 0
 
     if request.method == 'POST':
-        title = request.POST.get('title')
-        amount = request.POST.get('amount')
-        category = request.POST.get('category')
-        date_str = request.POST.get('date', today.isoformat())
+        title = request.POST.get('title', '').strip()
+        amount_str = request.POST.get('amount', '').strip()
+        category = request.POST.get('category', '')
+        date_str = request.POST.get('date', '').strip()
+
+        errors = _validate_expense_data(title, amount_str, category, date_str)
+
+        if errors:
+            context = {
+                'expenses': expenses,
+                'total': total,
+                'categories': [c[0] for c in CATEGORY_CHOICES],
+                'start_date': start_date.isoformat(),
+                'end_date': end_date.isoformat(),
+                'errors': errors,
+                'form_data': request.POST,
+            }
+            return render(request, 'expenses/dashboard.html', context)
+
         Expense.objects.create(
             user=request.user,
             title=title,
-            amount=amount,
+            amount=amount_str,
             category=category,
-            date=date_str,
+            date=date_str or today.isoformat(),
         )
         return redirect(f'/?start_date={start_date}&end_date={end_date}')
 
@@ -113,6 +145,7 @@ def filter_expenses(request):
     today = date.today()
     last_month_end = today.replace(day=1) - timedelta(days=1)
     last_month_start = last_month_end.replace(day=1)
+    last_30_days = today - timedelta(days=30)
 
     context = {
         'expenses': expenses,
@@ -122,6 +155,7 @@ def filter_expenses(request):
         'today': today,
         'last_month_start': last_month_start.isoformat(),
         'last_month_end': last_month_end.isoformat(),
+        'last_30_days': last_30_days,
     }
     return render(request, 'expenses/filter.html', context)
 
@@ -135,13 +169,16 @@ def reports(request):
     category_data = _get_category_data(expenses)
 
     # Category summary for table
+    cat_counts = dict(
+        expenses.values_list('category')
+        .annotate(count=Count('id'))
+    )
     category_summary = []
     for cat in category_data:
-        cat_expenses = expenses.filter(category=cat['category'])
         category_summary.append({
             'category': cat['category'],
             'total': cat['total'],
-            'count': cat_expenses.count(),
+            'count': cat_counts.get(cat['category'], 0),
             'percentage': round((cat['total'] / total * 100) if total > 0 else 0, 1)
         })
 
@@ -177,7 +214,11 @@ def edit_expense(request, expense_id):
         expense.category = request.POST.get('category')
         expense.date = request.POST.get('date')
         expense.save()
-        return redirect(request.POST.get('next', '/'))
+
+        next_url = request.POST.get('next', '/')
+        if not url_has_allowed_host_and_scheme(next_url, allowed_hosts={request.get_host()}):
+            next_url = '/'
+        return redirect(next_url)
     return redirect('/')
 
 
@@ -193,7 +234,8 @@ def delete_expense(request, expense_id):
     if end_date:
         params['end_date'] = end_date
     next_url = request.META.get('HTTP_REFERER', '/')
+    if not url_has_allowed_host_and_scheme(next_url, allowed_hosts={request.get_host()}):
+        next_url = '/'
     if params:
-        from urllib.parse import urlencode
         next_url += '?' + urlencode(params)
     return redirect(next_url)

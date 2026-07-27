@@ -54,7 +54,7 @@
     <!-- Quick Filters -->
     <div class="quick-filters">
       <a href="?" class="quick-filter {% if not request.GET.start_date and not request.GET.end_date %}active{% endif %}">This Month</a>
-      <a href="?start_date={{ today|date:'Y-m-01' }}&end_date={{ today|date:'Y-m-d' }}" class="quick-filter {% if request.GET.start_date == today|date:'Y-m-01' and request.GET.end_date == today|date:'Y-m-d' %}active{% endif %}">Last 30 Days</a>
+      <a href="?start_date={{ last_30_days|date:'Y-m-d' }}&end_date={{ today|date:'Y-m-d' }}" class="quick-filter{% if request.GET.start_date == last_30_days|date:'Y-m-d' and request.GET.end_date == today|date:'Y-m-d' %} active{% endif %}">Last 30 Days</a>
       <a href="?start_date={{ today|date:'Y-01-01' }}&end_date={{ today|date:'Y-m-d' }}" class="quick-filter {% if request.GET.start_date == today|date:'Y-01-01' and request.GET.end_date == today|date:'Y-m-d' %}active{% endif %}">This Year</a>
       <a href="?start_date={{ last_month_start }}&end_date={{ last_month_end }}" class="quick-filter">Last Month</a>
     </div>
