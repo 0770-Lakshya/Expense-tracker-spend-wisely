@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-md-5">
+      <div class="card">
+        <div class="card-body p-5 text-center">
+          <div class="mb-4">
+            <div class="d-inline-flex align-items-center justify-content-center" style="width: 80px; height: 80px; border-radius: 50%; background: #fef2f2;">
+              <i class="bi bi-exclamation-triangle" style="font-size: 2rem; color: #ef4444;"></i>
+            </div>
+          </div>
+          <h2 class="fw-bold" style="color: var(--text);">Sign In Failed</h2>
+          <p class="text-muted mb-1">An error occurred while trying to sign in with Google.</p>
+          <p class="text-muted mb-4" style="font-size: 0.875rem;">This usually happens if the Google OAuth app is not configured correctly.</p>
+          <div class="alert alert-secondary text-start" style="font-size: 0.8125rem; background: var(--bg); border: 1px solid var(--border);">
+            <strong class="d-block mb-1">Common fixes:</strong>
+            <ol class="mb-0 ps-3">
+              <li>Add this redirect URI to <a href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noopener" style="color: var(--primary);">Google Cloud Console</a>:<br>
+                <code style="font-size: 0.75rem; word-break: break-all;">https://expense-tracker-spend-wisely.onrender.com/accounts/google/login/callback/</code>
+              </li>
+              <li class="mt-1">Make sure the OAuth consent screen is configured</li>
+              <li class="mt-1">Ensure your email is added as a test user</li>
+            </ol>
+          </div>
+          <div class="d-flex gap-2 justify-content-center mt-4">
+            <a href="{% url 'account_login' %}" class="btn btn-outline-secondary">
+              <i class="bi bi-arrow-left me-1"></i>Back to Sign In
+            </a>
+            <a href="{% provider_login_url 'google' %}" class="btn btn-primary">
+              <i class="bi bi-arrow-repeat me-1"></i>Try Again
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
