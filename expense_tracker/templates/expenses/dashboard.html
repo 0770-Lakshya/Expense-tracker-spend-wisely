@@ -156,8 +156,9 @@ Expense Tracker{% endblock %}
                                 <td>
                                     <button type="button" class="btn btn-sm btn-outline-secondary me-1"
                                             data-bs-toggle="modal" data-bs-target="#editModal"
-                                            data-id="{{ expense.id }}"
-                                            data-title="{{ expense.title }}"
+                                             data-id="{{ expense.id }}"
+                                             data-url="{% url 'edit_expense' expense.id %}"
+                                             data-title="{{ expense.title }}"
                                             data-amount="{{ expense.amount }}"
                                             data-category="{{ expense.category }}"
                                             data-date="{{ expense.date|date:'Y-m-d' }}">
@@ -242,7 +243,7 @@ document.addEventListener('DOMContentLoaded', function() {
         editModal.addEventListener('show.bs.modal', function(event) {
             const btn = event.relatedTarget;
             const form = document.getElementById('editForm');
-            form.action = "{% url 'edit_expense' 0 %}".replace('0', btn.dataset.id);
+            form.action = btn.dataset.url;
             document.getElementById('edit-title').value = btn.dataset.title;
             document.getElementById('edit-amount').value = btn.dataset.amount;
             document.getElementById('edit-category').value = btn.dataset.category;
